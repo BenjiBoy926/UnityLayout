@@ -3,6 +3,5 @@
     Start,
     Center,
     End,
-    SpaceBetween,
-    SpaceEvenly
+    Justify
 }

@@ -1,7 +1,18 @@
-﻿public enum LayoutDirection
+﻿public class LayoutDirection
 {
-    LeftToRight,
-    RightToLeft,
-    UpToDown,
-    DownToUp
+    public LayoutDirectionType type;
+
+    public LayoutDirection(LayoutDirectionType t)
+    {
+        type = t;
+    }
+
+    public LayoutDirectionCategory Category()
+    {
+        if (type == LayoutDirectionType.LeftToRight || type == LayoutDirectionType.RightToLeft)
+        {
+            return LayoutDirectionCategory.Horizontal;
+        }
+        else return LayoutDirectionCategory.Vertical;
+    }
 }

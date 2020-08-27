@@ -1,4 +1,6 @@
-﻿public class LayoutSize
+﻿using UnityEngine;
+
+public class LayoutSize
 {
     public LayoutSizeType type;
     public float size;
@@ -45,5 +47,26 @@
     public static LayoutSize RatioOfRemainder(float ratio, float min, float max)
     {
         return new LayoutSize(LayoutSizeType.RatioOfRemainder, ratio, min, max);
+    }
+
+    public bool IsConstant()
+    {
+        return type == LayoutSizeType.Exact || type == LayoutSizeType.RatioOfTotal;
+    }
+    public bool IsVariable()
+    {
+        return !IsConstant();
+    }
+    // Get the exact size that this layout size represents
+    public float Compile(float totalOrRemainder)
+    {
+        if(type == LayoutSizeType.Exact)
+        {
+            return size;
+        }
+        else
+        {
+            return Mathf.Clamp(totalOrRemainder * size, min, max);
+        }
     }
 }

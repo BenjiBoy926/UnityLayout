@@ -1,8 +1,17 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 public class Layout
 {
+    // TYPEDEFS
+
+    // Builder class for a layout.
+    // Build a set of rectangles for each EdiorGUI control using abstract concepts
+    // of direction, alignment, and wrapping rather than computing
+    // all dimensions and coordinates manually.  
+
+    // Loosely based off of Flexbox concepts in CSS
     public class Builder
     {
         private LayoutDirection direction;
@@ -12,7 +21,7 @@ public class Layout
         private List<LayoutChild> children;
 
         public Builder() : this(
-            LayoutDirection.LeftToRight,
+            new LayoutDirection(LayoutDirectionType.LeftToRight),
             LayoutWrap.NoWrap,
             LayoutAlignment.Start,
             LayoutAlignment.Start)
@@ -31,6 +40,7 @@ public class Layout
             wrap = w;
             mainAlign = mA;
             crossAlign = cA;
+            children = new List<LayoutChild>();
         }
 
         // FIELD SET
@@ -44,6 +54,11 @@ public class Layout
         {
             wrap = w;
             return this;
+        }
+        public Builder Align(LayoutAlignment align, LayoutAlignmentType type)
+        {
+            if (type == LayoutAlignmentType.Main) return MainAlign(align);
+            else return CrossAlign(align);
         }
         public Builder MainAlign(LayoutAlignment mA)
         {
@@ -134,13 +149,107 @@ public class Layout
         }
 
         // COMPILE
-        public Layout Compile()
+        public Layout Compile(Rect container)
         {
+            // Initialize child rects
             List<Rect> rects = new List<Rect>();
+            for (int i = 0; i < children.Count; i++)
+            {
+                rects.Add(new Rect());
+            }
 
+            CompileChildrenSizes(container.size, rects);
 
+            for(int i = 0; i < rects.Count; i++)
+            {
+                Debug.Log(rects[i]);
+            }
 
             return new Layout(rects);
+        }
+        // Compile Sizes
+        private void CompileChildrenSizes(Vector2 containerSize, List<Rect> rects)
+        {
+            CompileConstantSizes(containerSize, rects);
+            CompileVariableSizes(containerSize - AggregateSizes(rects), rects);
+        }
+        private void CompileConstantSizes(Vector2 total, List<Rect> rects)
+        {
+            CompileChildrenSizeUtil(total, true, rects);
+        }
+        private void CompileVariableSizes(Vector2 remainder, List<Rect> rects)
+        {
+            CompileChildrenSizeUtil(remainder, false, rects);
+        }
+        private void CompileChildrenSizeUtil(Vector2 totalOrRemainder, bool constant, List<Rect> rects)
+        { 
+            // Used to build the rects in the list
+            Vector2 temp = new Vector2();
+
+            for (int i = 0; i < rects.Count; i++)
+            {
+                temp = rects[i].size;
+
+                // If the main size is a fixed type, get the exact size
+                if (children[i].WidthIsConstant() == constant)
+                {
+                    temp.x = children[i].CompileWidth(totalOrRemainder.x);
+                }
+                // If the cross size is a fixed type, get the exact size
+                if (children[i].HeightIsConstant() == constant)
+                {
+                    temp.y = children[i].CompileHeight(totalOrRemainder.y);
+                }
+
+                rects[i] = new Rect(rects[i].position, temp);
+            }
+        }
+        // Compile positions
+        private void CompilePositions(Rect container, List<Rect> rects)
+        {
+            Vector2 currentPosition = Vector2.zero;
+            LayoutAlignment trueCrossAlign;
+
+            for(int i = 0; i < rects.Count; i++)
+            {
+                trueCrossAlign = children[i].CompileCrossAlignment(crossAlign);
+
+                if(direction.Category() == LayoutDirectionCategory.Horizontal)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+        }
+
+        // UTIL
+        private Vector2 AggregateSizes(List<Rect> rects)
+        {
+            Vector2 size = Vector2.zero;
+            foreach (Rect r in rects)
+            {
+                size += r.size;
+            }
+            return size;
+        }
+        private float LeftoverSpace(Rect container, List<Rect> rects)
+        {
+            if (direction.Category() == LayoutDirectionCategory.Horizontal)
+            {
+                return container.width - AggregateSizes(rects).x;
+            }
+            else return container.height - AggregateSizes(rects).y;
+        }
+        private float CenterSpace(Rect container, List<Rect> rects)
+        {
+            return LeftoverSpace(container, rects) / 2f;
+        }
+        private float JustifySpace(Rect container, List<Rect> rects)
+        {
+            return LeftoverSpace(container, rects) / (rects.Count + 1);
         }
     }
 
@@ -153,6 +262,7 @@ public class Layout
         cursor = 0;
     }
 
+    // Member functions
     public void Start()
     {
         cursor = 0;
