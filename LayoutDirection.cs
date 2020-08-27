@@ -7,12 +7,21 @@
         type = t;
     }
 
-    public LayoutDirectionCategory Category()
+    // Getters
+    public LayoutOrientation Orientation()
     {
         if (type == LayoutDirectionType.LeftToRight || type == LayoutDirectionType.RightToLeft)
         {
-            return LayoutDirectionCategory.Horizontal;
+            return LayoutOrientation.Horizontal;
         }
-        else return LayoutDirectionCategory.Vertical;
+        else return LayoutOrientation.Vertical;
+    }
+    public LayoutMovement Movement()
+    {
+        if (type == LayoutDirectionType.LeftToRight || type == LayoutDirectionType.UpToDown)
+        {
+            return LayoutMovement.Forwards;
+        }
+        else return LayoutMovement.Backwards;
     }
 }

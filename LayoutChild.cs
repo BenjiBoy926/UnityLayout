@@ -5,6 +5,7 @@ public class LayoutChild
     public LayoutSize width;
     public LayoutSize height;
     public LayoutChildAlignment crossAlign;
+    public Rect rect;
 
     public LayoutChild(LayoutSize w, LayoutSize h) : this(w, h, LayoutChildAlignment.Default()) { }
     public LayoutChild(LayoutSize w, LayoutSize h, LayoutChildAlignment cA)
@@ -12,6 +13,7 @@ public class LayoutChild
         width = w;
         height = h;
         crossAlign = cA;
+        rect = new Rect();
     }
 
     // Delegates
