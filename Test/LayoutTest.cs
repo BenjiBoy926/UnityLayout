@@ -6,9 +6,9 @@ public class LayoutTest : MonoBehaviour
     void Start()
     {
         Layout.Builder builder = new Layout.Builder();
-        builder.PushChild(new LayoutChild(LayoutSize.Exact(50), LayoutSize.RatioOfTotal(1)));
-        builder.PushChild(new LayoutChild(LayoutSize.RatioOfTotal(0.25f), LayoutSize.RatioOfTotal(1)));
-        builder.PushChild(new LayoutChild(LayoutSize.RatioOfRemainder(0.5f), LayoutSize.RatioOfTotal(1)));
+        builder.PushChild(new LayoutChild(LayoutSize.Exact(50), LayoutSize.RatioOfTotal()));
+        builder.PushChild(new LayoutChild(LayoutSize.RatioOfTotal(0.25f), LayoutSize.RatioOfTotal()));
+        builder.PushChild(new LayoutChild(LayoutSize.RatioOfRemainder(0.5f), LayoutSize.RatioOfTotal()));
         Layout layout = builder.Compile(new Rect(0, 0, 100, 50));
     }
 }

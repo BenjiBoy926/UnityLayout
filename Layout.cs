@@ -52,8 +52,9 @@ public class Layout
         }
         public Builder Wrap(LayoutWrap w)
         {
-            wrap = w;
-            return this;
+            throw new NotImplementedException("Layout child wrapping not yet supported");
+            //wrap = w;
+            //return this;
         }
         public Builder Align(LayoutAlignment align, LayoutAxis type)
         {
@@ -147,18 +148,18 @@ public class Layout
             children[index2] = swapper;
             return this;
         }
+        // Clear
+        public Builder ClearChildren()
+        {
+            children.Clear();
+            return this;
+        }
 
         // COMPILE
         public Layout Compile(Rect container)
         {
             CompileChildrenSizes(container.size);
-            CompileChildrenPositions(container);
-
-            for(int i = 0; i < children.Count; i++)
-            {
-                Debug.Log(children[i].rect);
-            }
-
+            CompileChildrenCoordinates(container);
             return new Layout(GetChildrenRects());
         }
         // Compile Sizes
@@ -187,24 +188,94 @@ public class Layout
                 // If the main size is a fixed type, get the exact size
                 if (children[i].WidthIsConstant() == constant)
                 {
-                    temp.x = children[i].CompileWidth(totalOrRemainder.x);
+                    temp.x = children[i].CompileContentWidth(totalOrRemainder.x);
                 }
                 // If the cross size is a fixed type, get the exact size
                 if (children[i].HeightIsConstant() == constant)
                 {
-                    temp.y = children[i].CompileHeight(totalOrRemainder.y);
+                    temp.y = children[i].CompileContentHeight(totalOrRemainder.y);
                 }
 
                 children[i].rect.size = temp;
             }
         }
         // Compile positions
-        private void CompileChildrenPositions(Rect container)
+        private void CompileChildrenCoordinates(Rect container)
         {
             for(int i = 0; i < children.Count; i++)
             {
                 children[i].rect.position = GetLayoutChildCoordinate(container, i);
             }
+        }
+
+        // Get coordinates
+        private Vector2 GetStartCoordinate(Rect container)
+        {
+            float mainAxisCoordinate;
+            float mainAxisStartMargin = children[0].CompileMainAxisStartMargin(orientation);
+
+            // Compute the main axis coordinate based on the main axis alignment of the layout children
+            if (mainAlign == LayoutAlignment.Start)
+            {
+                mainAxisCoordinate = MainAxisCoordinate(container);
+            }
+            else if (mainAlign == LayoutAlignment.Center)
+            {
+                mainAxisCoordinate = MainAxisCoordinate(container) + CenterSpace(container);
+            }
+            else if (mainAlign == LayoutAlignment.End)
+            {
+                mainAxisCoordinate = MainAxisCoordinate(container) + LeftoverSpace(container);
+            }
+            else
+            {
+                mainAxisCoordinate = MainAxisCoordinate(container) + JustifySpace(container);
+            }
+
+            // Determine if the main axis coordinate is the x-value or y-value
+            if (orientation == LayoutOrientation.Horizontal)
+            {
+                return new Vector2(mainAxisCoordinate + mainAxisStartMargin, container.y);
+            }
+            else return new Vector2(container.x, mainAxisCoordinate + mainAxisStartMargin);
+        }
+        private Vector2 GetLayoutChildCoordinate(Rect container, int index)
+        {
+            Vector2 position = GetStartCoordinate(container);
+
+            float mainAxisShift = 0;
+            float crossAxisShift = 0;
+            
+            // Compute the cross axis shift
+            LayoutAlignment trueCrossAlign = children[index].CompileCrossAlignment(crossAlign);
+            if(trueCrossAlign == LayoutAlignment.Center || trueCrossAlign == LayoutAlignment.Justify)
+            {
+                crossAxisShift = (CrossAxisSize(container) - CrossAxisSize(children[index])) / 2f;
+            }
+            else if(trueCrossAlign == LayoutAlignment.End)
+            {
+                crossAxisShift = CrossAxisSize(container) - CrossAxisSize(children[index]) + children[index].CompileCrossAxisStartMargin(orientation);
+            }
+
+            // Set the shift of the child along the main axis
+            // By adding the sizes along the main axis 
+            // of all the children before this child
+            for(int i = 0; i < index; i++)
+            {
+                mainAxisShift += MainAxisSize(children[i]) - children[i].CompileMainAxisStartMargin(orientation);
+                mainAxisShift += children[i + 1].CompileMainAxisStartMargin(orientation);
+
+                if (mainAlign == LayoutAlignment.Justify)
+                {
+                    mainAxisShift += JustifySpace(container);
+                }
+            }
+
+            if (orientation == LayoutOrientation.Horizontal)
+            {
+                return new Vector2(position.x + mainAxisShift, position.y + crossAxisShift);
+            }
+            else return new Vector2(position.x + crossAxisShift, position.y + mainAxisShift);
         }
 
         // UTIL
@@ -215,6 +286,8 @@ public class Layout
             foreach (LayoutChild child in children)
             {
                 size += child.rect.size;
+                size.x += child.margin.horizontalSpace;
+                size.y += child.margin.verticalSpace;
             }
             return size;
         }
@@ -251,7 +324,15 @@ public class Layout
         }
         private float MainAxisSize(Rect rect)
         {
-            return AxisSize(rect, LayoutAxis.Main);
+            return MainAxisSize(rect, new LayoutMargin());
+        }
+        private float MainAxisSize(LayoutChild child)
+        {
+            return MainAxisSize(child.rect, child.margin);
+        }
+        private float MainAxisSize(Rect rect, LayoutMargin margin)
+        {
+            return AxisSize(rect, margin, LayoutAxis.Main);
         }
         // Separeate cross axis component of the rect based on axis of the layout direction
         private float CrossAxisCoordinate(Rect rect)
@@ -260,12 +341,20 @@ public class Layout
         }
         private float CrossAxisSize(Rect rect)
         {
-            return AxisSize(rect, LayoutAxis.Cross);
+            return CrossAxisSize(rect, new LayoutMargin());
+        }
+        private float CrossAxisSize(LayoutChild child)
+        {
+            return CrossAxisSize(child.rect, child.margin);
+        }
+        private float CrossAxisSize(Rect rect, LayoutMargin margin)
+        {
+            return AxisSize(rect, margin, LayoutAxis.Cross);
         }
         // Get the coordinate of the rect along the given layout axis
         private float AxisCoordinate(Rect rect, LayoutAxis axis)
         {
-            if(axis == LayoutAxis.Main)
+            if (axis == LayoutAxis.Main)
             {
                 if (orientation == LayoutOrientation.Horizontal)
                 {
@@ -282,92 +371,24 @@ public class Layout
                 else return rect.x;
             }
         }
-        private float AxisSize(Rect rect, LayoutAxis axis)
+        private float AxisSize(Rect rect, LayoutMargin margin, LayoutAxis axis)
         {
             if (axis == LayoutAxis.Main)
             {
                 if (orientation == LayoutOrientation.Horizontal)
                 {
-                    return rect.width;
+                    return rect.width + margin.left + margin.right;
                 }
-                else return rect.height;
+                else return rect.height + margin.top + margin.bottom;
             }
             else
             {
                 if (orientation == LayoutOrientation.Horizontal)
                 {
-                    return rect.height;
+                    return rect.height + margin.top + margin.bottom;
                 }
-                else return rect.width;
+                else return rect.width + margin.left + margin.right;
             }
-        }
-
-        // Get coordinates
-        private Vector2 GetStartCoordinate(Rect container)
-        {
-            float mainAxisCoordinate;
-
-            // Compute the main axis coordinate based on the main axis alignment of the layout children
-            if (mainAlign == LayoutAlignment.Start)
-            {
-                mainAxisCoordinate = MainAxisCoordinate(container);
-            }
-            else if (mainAlign == LayoutAlignment.Center)
-            {
-                mainAxisCoordinate = MainAxisCoordinate(container) + CenterSpace(container);
-            }
-            else if (mainAlign == LayoutAlignment.End)
-            {
-                mainAxisCoordinate = MainAxisCoordinate(container) + LeftoverSpace(container);
-            }
-            else
-            {
-                mainAxisCoordinate = MainAxisCoordinate(container) + JustifySpace(container);
-            }
-
-            // Determine if the main axis coordinate is the x-value or y-value
-            if (orientation == LayoutOrientation.Horizontal)
-            {
-                return new Vector2(mainAxisCoordinate, container.y);
-            }
-            else return new Vector2(container.x, mainAxisCoordinate);
-        }
-        private Vector2 GetLayoutChildCoordinate(Rect container, int index)
-        {
-            Vector2 position = GetStartCoordinate(container);
-
-            float mainAxisShift = 0;
-            float crossAxisShift = 0;
-
-            // Compute the cross axis shift
-            LayoutAlignment trueCrossAlign = children[index].CompileCrossAlignment(crossAlign);
-            if(trueCrossAlign == LayoutAlignment.Center || trueCrossAlign == LayoutAlignment.Justify)
-            {
-                crossAxisShift = (CrossAxisSize(container) - CrossAxisSize(children[index].rect)) / 2f;
-            }
-            else if(trueCrossAlign == LayoutAlignment.End)
-            {
-                crossAxisShift = CrossAxisSize(container) - CrossAxisSize(children[index].rect);
-            }
-
-            // Set the shift of the child along the main axis
-            // By adding the sizes along the main axis 
-            // of all the children before this child
-            for(int i = 0; i < index; i++)
-            {
-                mainAxisShift += MainAxisSize(children[i].rect);
-
-                if (mainAlign == LayoutAlignment.Justify)
-                {
-                    mainAxisShift += JustifySpace(container);
-                }
-            }
-
-            if (orientation == LayoutOrientation.Horizontal)
-            {
-                return new Vector2(position.x + mainAxisShift, position.y + crossAxisShift);
-            }
-            else return new Vector2(position.x + crossAxisShift, position.y + mainAxisShift);
         }
     }
 

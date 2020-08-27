@@ -23,6 +23,10 @@ public class LayoutSize
         return new LayoutSize(LayoutSizeType.Exact, size);
     }
     // Ratio of total
+    public static LayoutSize RatioOfTotal()
+    {
+        return RatioOfTotal(1);
+    }
     public static LayoutSize RatioOfTotal(float ratio)
     {
         return RatioOfTotal(ratio, 0);
@@ -36,6 +40,10 @@ public class LayoutSize
         return new LayoutSize(LayoutSizeType.RatioOfTotal, ratio, min, max);
     }
     // Ratio of remainder
+    public static LayoutSize RatioOfRemainder()
+    {
+        return RatioOfRemainder(1);
+    }
     public static LayoutSize RatioOfRemainder(float ratio)
     {
         return RatioOfRemainder(ratio, 0);
