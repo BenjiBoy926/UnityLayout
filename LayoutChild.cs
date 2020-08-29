@@ -3,12 +3,67 @@ using UnityEditor;
 
 public class LayoutChild
 {
+    // FIELDS
     public LayoutSize width;
     public LayoutSize height;
     public LayoutChildAlignment crossAlign;
     public LayoutMargin margin;
     public Rect rect;
 
+    // PROPERTIES
+    // Sizes
+    public float totalWidth
+    {
+        get
+        {
+            return rect.width + margin.left + margin.right;
+        }
+    }
+    public float totalHeight
+    {
+        get
+        {
+            return rect.height + margin.top + margin.bottom;
+        }
+    }
+    public Vector2 totalSize
+    {
+        get
+        {
+            return new Vector2(totalWidth, totalHeight);
+        }
+    }
+    // Size types
+    public bool constantWidth
+    {
+        get
+        {
+            return width.constant;
+        }
+    }
+    public bool variableWidth
+    {
+        get
+        {
+            return width.variable;
+        }
+    }
+    public bool constantHeight
+    {
+        get
+        {
+            return height.constant;
+        }
+    }
+    public bool variableHeight
+    {
+        get
+        {
+            return height.variable;
+        }
+    }
+
+    // Constructors with no size parameters, assuming the width is the full width and the height is EditorGUIUtility.singleLineHeight
     public LayoutChild() : this(new LayoutMargin()) { }
     public LayoutChild(LayoutMargin m) : this(LayoutChildAlignment.Default(), m) { }
     public LayoutChild(LayoutChildAlignment cA) : this(cA, new LayoutMargin()) { }
@@ -39,26 +94,10 @@ public class LayoutChild
     {
         return width.Compile(totalOrRemainder);
     }
-    public bool WidthIsConstant()
-    {
-        return width.IsConstant();
-    }
-    public bool WidthIsVariable()
-    {
-        return width.IsVariable();
-    }
     // Height
     public float CompileContentHeight(float totalOrRemainder)
     {
         return height.Compile(totalOrRemainder);
-    }
-    public bool HeightIsConstant()
-    {
-        return height.IsConstant();
-    }
-    public bool HeightIsVariable()
-    {
-        return height.IsVariable();
     }
     // Alignment
     public LayoutAlignment CompileCrossAlignment(LayoutAlignment parentAlignment)
@@ -66,28 +105,12 @@ public class LayoutChild
         return crossAlign.CompileAlignment(parentAlignment);
     }
     // Margin
-    public float CompileMainAxisStartMargin(LayoutOrientation orientation)
+    public float OrientationStartMargin(LayoutOrientation orientation)
     {
-        if (orientation == LayoutOrientation.Horizontal)
-        {
-            return margin.left;
-        }
-        else return margin.top;
+        return margin.OrienationStartMargin(orientation);
     }
-    public float CompileMainAxisEndMargin(LayoutOrientation orientation)
+    public float OrientationEndMargin(LayoutOrientation orientation)
     {
-        if (orientation == LayoutOrientation.Horizontal)
-        {
-            return margin.right;
-        }
-        else return margin.bottom;
-    }
-    public float CompileCrossAxisStartMargin(LayoutOrientation orientation)
-    {
-        if (orientation == LayoutOrientation.Horizontal)
-        {
-            return margin.top;
-        }
-        else return margin.left;
+        return margin.OrienationEndMargin(orientation);
     }
 }

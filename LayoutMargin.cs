@@ -8,6 +8,7 @@ public class LayoutMargin
     public float left;
     public float right;
 
+    // PROPERTIES
     public Vector2 horizontal
     {
         get
@@ -33,14 +34,14 @@ public class LayoutMargin
         }
     }
 
-    public float horizontalSpace
+    public float width
     {
         get
         {
             return left + right;
         }
     }
-    public float verticalSpace
+    public float height
     {
         get
         {
@@ -59,6 +60,7 @@ public class LayoutMargin
     }
 
     // Factory methods
+    // Top
     public static LayoutMargin Top(float t)
     {
         return new LayoutMargin(t, 0, 0, 0);
@@ -67,7 +69,7 @@ public class LayoutMargin
     {
         return new LayoutMargin(EditorGUIUtility.standardVerticalSpacing, 0, 0, 0);
     }
-
+    // Bottom
     public static LayoutMargin Bottom(float b)
     {
         return new LayoutMargin(0, b, 0, 0);
@@ -76,21 +78,22 @@ public class LayoutMargin
     {
         return new LayoutMargin(0, EditorGUIUtility.standardVerticalSpacing, 0, 0);
     }
-
+    // Left
     public static LayoutMargin Left(float l)
     {
         return new LayoutMargin(0, 0, l, 0);
     }
+    // Right
     public static LayoutMargin Right(float r)
     {
         return new LayoutMargin(0, 0, 0, r);
     }
-
+    // Horizontal margin
     public static LayoutMargin Horizontal(Vector2 horizontal)
     {
         return new LayoutMargin(horizontal, Vector2.zero);
     }
-
+    // Vertical margin
     public static LayoutMargin Vertical(Vector2 vertical)
     {
         return new LayoutMargin(Vector2.zero, vertical);
@@ -98,5 +101,23 @@ public class LayoutMargin
     public static LayoutMargin Vertical()
     {
         return new LayoutMargin(Vector2.zero, new Vector2(EditorGUIUtility.standardVerticalSpacing, EditorGUIUtility.standardVerticalSpacing));
+    }
+
+    // METHODS
+    public float OrienationStartMargin(LayoutOrientation orientation)
+    {
+        if (orientation == LayoutOrientation.Horizontal)
+        {
+            return left;
+        }
+        else return top;
+    }
+    public float OrienationEndMargin(LayoutOrientation orientation)
+    {
+        if (orientation == LayoutOrientation.Horizontal)
+        {
+            return right;
+        }
+        else return bottom;
     }
 }

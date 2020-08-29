@@ -2,10 +2,27 @@
 
 public class LayoutSize
 {
+    // FIELDS
     public LayoutSizeType type;
     public float size;
     public float min;
     public float max;
+
+    // PROPERTIES
+    public bool constant
+    {
+        get
+        {
+            return type == LayoutSizeType.Exact || type == LayoutSizeType.RatioOfTotal;
+        }
+    }
+    public bool variable
+    {
+        get
+        {
+            return !constant;
+        }
+    }
 
     private LayoutSize(LayoutSizeType t, float s) : this(t, s, 0, float.PositiveInfinity) { }
     private LayoutSize(LayoutSizeType t, float s, float mn, float mx)
@@ -57,14 +74,6 @@ public class LayoutSize
         return new LayoutSize(LayoutSizeType.RatioOfRemainder, ratio, min, max);
     }
 
-    public bool IsConstant()
-    {
-        return type == LayoutSizeType.Exact || type == LayoutSizeType.RatioOfTotal;
-    }
-    public bool IsVariable()
-    {
-        return !IsConstant();
-    }
     // Get the exact size that this layout size represents
     public float Compile(float totalOrRemainder)
     {
