@@ -63,19 +63,19 @@ public class LayoutChild
         }
     }
 
-    // Constructors with no size parameters, assuming the width is the full width and the height is EditorGUIUtility.singleLineHeight
+    // Conclassors with no size parameters, assuming the width is the full width and the height is EditorGUIUtility.singleLineHeight
     public LayoutChild() : this(new LayoutMargin()) { }
     public LayoutChild(LayoutMargin m) : this(LayoutChildAlignment.Default(), m) { }
     public LayoutChild(LayoutChildAlignment cA) : this(cA, new LayoutMargin()) { }
     public LayoutChild(LayoutChildAlignment cA, LayoutMargin m) : this(LayoutSize.RatioOfTotal(), cA, m) { }
 
-    // Constructors where you give the width, assuming the height is EditorGUIUtility.singleLineHeight
+    // Conclassors where you give the width, assuming the height is EditorGUIUtility.singleLineHeight
     public LayoutChild(LayoutSize w) : this(w, LayoutChildAlignment.Default()) { }
     public LayoutChild(LayoutSize w, LayoutMargin m) : this(w, LayoutChildAlignment.Default(), m) { }
     public LayoutChild(LayoutSize w, LayoutChildAlignment cA) : this(w, cA, new LayoutMargin()) { }
     public LayoutChild(LayoutSize w, LayoutChildAlignment cA, LayoutMargin m) : this(w, LayoutSize.Exact(EditorGUIUtility.singleLineHeight), cA, m) { }
 
-    // Constructors where you give width and height
+    // Conclassors where you give width and height
     public LayoutChild(LayoutSize w, LayoutSize h) : this(w, h, LayoutChildAlignment.Default()) { }
     public LayoutChild(LayoutSize w, LayoutSize h, LayoutChildAlignment cA) : this(w, h, cA, new LayoutMargin()) { }
     public LayoutChild(LayoutSize w, LayoutSize h, LayoutMargin m) : this(w, h, LayoutChildAlignment.Default(), m) { }
