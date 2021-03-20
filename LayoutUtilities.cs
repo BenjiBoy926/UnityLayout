@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System.Collections.Generic;
 
 public static class LayoutUtilities
 {
+    public static float standardControlHeight => EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+
     // Get coordinates
     public static Vector2 GetStartCoordinate(Rect container, LayoutOrientation orientation, LayoutAlignment mainAlign, List<LayoutChild> children)
     {
