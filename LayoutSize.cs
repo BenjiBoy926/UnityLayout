@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 
 public class LayoutSize
 {
@@ -72,6 +73,16 @@ public class LayoutSize
     public static LayoutSize RatioOfRemainder(float ratio, float min, float max)
     {
         return new LayoutSize(LayoutSizeType.RatioOfRemainder, ratio, min, max);
+    }
+
+    // Default values for the layout size
+    public static LayoutSize DefaultWidth()
+    {
+        return RatioOfTotal();
+    }
+    public static LayoutSize DefaultHeight()
+    {
+        return Exact(EditorGUIUtility.singleLineHeight);
     }
 
     // Get the exact size that this layout size represents
